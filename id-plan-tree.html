@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>RD 4명이면 ID!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A5C; --gold:#D4A94A; --gold-soft:#F0DCA6;
+    --ivory:#FAF7F2; --ink:#233240; --mute:#7A8899; --line:#EBE3D3;
+    --md:#8FC7E8; --md-d:#6BADD6;
+    --smd:#6FA8DC; --smd-d:#4E88BD;
+    --rd:#3F79B0; --rd-d:#2E5F91;
+    --id:#F0C44E; --id-d:#D4A32E;
+    --link:#C9B683;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{background:var(--ivory);color:var(--ink);
+    font-family:'Noto Sans KR',-apple-system,sans-serif;word-break:keep-all;
+    -webkit-font-smoothing:antialiased;line-height:1.5;}
+  .wrap{max-width:480px;margin:0 auto;padding:26px 20px 70px;
+    padding-bottom:calc(70px + env(safe-area-inset-bottom));}
+
+  /* ══ 블록 ══ */
+  .blk{border-radius:16px;color:#fff;font-weight:900;text-align:center;
+    display:grid;place-items:center;line-height:1.15;
+    box-shadow:0 5px 0 var(--shadow,rgba(0,0,0,.18)),
+               0 8px 14px rgba(27,58,92,.14);
+    border:2px solid rgba(255,255,255,.5);position:relative;z-index:1;}
+  .blk small{display:block;font-size:9px;font-weight:600;opacity:.9;margin-top:1px;}
+  .blk.md{background:linear-gradient(160deg,var(--md),var(--md-d));--shadow:#4E93C4;}
+  .blk.smd{background:linear-gradient(160deg,var(--smd),var(--smd-d));--shadow:#3D72A8;}
+  .blk.rd{background:linear-gradient(160deg,var(--rd),var(--rd-d));--shadow:#234C74;}
+  .blk.id{background:linear-gradient(160deg,var(--id),var(--id-d));--shadow:#B98C22;color:#5A4410;}
+  .s{width:64px;height:52px;font-size:13px;}
+  .m{width:84px;height:60px;font-size:14px;}
+  .l{width:124px;height:66px;font-size:16px;}
+
+  /* ══ HERO 결론 ══ */
+  .hero{background:linear-gradient(160deg,#20456B,#15304C);border-radius:26px;
+    padding:28px 20px 30px;text-align:center;color:#fff;position:relative;
+    overflow:hidden;box-shadow:0 12px 30px rgba(27,58,92,.22);}
+  .hero::after{content:"";position:absolute;left:50%;top:-50px;
+    transform:translateX(-50%);width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle,rgba(240,196,78,.3),transparent 68%);}
+  .hero .tag{font-size:12px;letter-spacing:.2em;color:var(--gold-soft);
+    font-weight:700;position:relative;}
+  .hero h1{font-size:29px;font-weight:900;line-height:1.32;margin-top:10px;
+    position:relative;letter-spacing:-.02em;}
+  .hero h1 .g{color:var(--gold-soft);}
+  .hero .eq{display:flex;align-items:center;justify-content:center;gap:12px;
+    margin-top:24px;position:relative;}
+  .hero .rd4{display:flex;gap:7px;}
+  .hero .rd4 .blk{width:52px;height:46px;font-size:12px;}
+  .hero .op{font-size:26px;font-weight:900;color:var(--gold-soft);}
+  .hero .sub{font-size:14px;color:#BFD0E2;margin-top:22px;position:relative;
+    line-height:1.6;}
+
+  /* ══ 섹션 헤더 ══ */
+  .sh{text-align:center;margin:38px 0 20px;}
+  .sh .k{font-size:12px;letter-spacing:.18em;color:var(--gold);font-weight:700;}
+  .sh h2{font-size:21px;font-weight:900;color:var(--navy);margin-top:6px;}
+  .sh p{font-size:14px;color:var(--mute);margin-top:8px;line-height:1.6;}
+
+  /* ══ 트리 (CSS tree — 선이 절대 안 끊어지는 구조) ══ */
+  .tree{background:#fff;border:1.5px solid var(--line);border-radius:24px;
+    padding:28px 12px 30px;box-shadow:0 6px 20px rgba(27,58,92,.05);}
+
+  .root{display:flex;flex-direction:column;align-items:center;}
+  /* 부모 아래 세로선 */
+  .stem{width:3px;height:22px;background:var(--link);border-radius:2px;}
+
+  /* 자식 행: 각 자식이 자기 머리 위 선을 스스로 그림 */
+  .kids{display:flex;justify-content:center;width:100%;}
+  .kid{position:relative;display:flex;flex-direction:column;align-items:center;
+    padding:20px 5px 0;flex:1;max-width:100px;}
+  /* 가로선: 각 자식 칸의 전체 폭 */
+  .kid::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--link);}
+  /* 첫/막내는 바깥쪽 절반 지움 → 가로선이 정확히 양 끝 세로선까지만 */
+  .kid:first-child::before{left:50%;}
+  .kid:last-child::before{right:50%;}
+  .kid:only-child::before{display:none;}
+  /* 세로 드롭선: 가로선 중앙에서 블록까지 */
+  .kid::after{content:"";position:absolute;top:0;left:50%;
+    transform:translateX(-50%);width:3px;height:20px;background:var(--link);}
+
+  .lbl{font-size:12px;color:var(--navy);font-weight:700;margin:16px auto 0;
+    text-align:center;background:#FBF6EA;border-radius:20px;padding:5px 16px;
+    width:fit-content;}
+
+  /* ══ 상세 박스 ══ */
+  .detail{margin-top:14px;background:#F4F8FC;border:1.5px solid #DCE7F2;
+    border-radius:18px;padding:22px 10px 22px;}
+  .detail .dt{text-align:center;font-size:13px;font-weight:900;color:var(--rd);
+    margin-bottom:18px;}
+  .detail .lbl{background:#E6EFF8;}
+
+  /* ══ REWARD ══ */
+  .reward{margin-top:24px;display:flex;gap:12px;}
+  .rc{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:20px;
+    padding:20px 14px;text-align:center;}
+  .rc .ico{font-size:26px;}
+  .rc .l{font-size:12px;color:var(--mute);font-weight:700;margin-top:6px;}
+  .rc .v{font-size:26px;font-weight:900;color:var(--navy);margin-top:2px;}
+  .rc .amt{font-size:15px;font-weight:900;color:var(--gold);margin-top:2px;}
+  .rc .amt::before{content:"약 ";font-weight:600;color:var(--mute);font-size:12px;}
+  .rc.g{background:linear-gradient(135deg,#FBF3DC,#F4E4BB);border-color:var(--gold);}
+
+  .foot{margin-top:28px;text-align:center;font-size:11px;color:var(--mute);
+    line-height:1.7;}
+  .foot .r{width:36px;height:2px;background:var(--gold);margin:0 auto 12px;
+    border-radius:2px;}
+
+  /* ══ MD 시작 가이드 ══ */
+  .rule{background:#FFF6F0;border:1.5px solid #F0D5C2;border-radius:16px;
+    padding:14px 16px;text-align:center;font-size:13px;font-weight:700;
+    color:#A85B33;line-height:1.7;margin-bottom:16px;}
+  .rule b{color:#8F3D24;}
+  .mtypes{display:flex;gap:10px;margin-bottom:18px;}
+  .mt{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:16px;
+    padding:16px 12px 13px;text-align:center;position:relative;}
+  .mt.hot{border-color:var(--gold);background:linear-gradient(135deg,#FDFAF1,#F9EED3);}
+  .mt .tag2{position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+    background:var(--gold);color:#fff;font-size:10px;font-weight:900;
+    border-radius:20px;padding:2px 10px;white-space:nowrap;}
+  .mt .nm{font-size:13px;font-weight:900;color:var(--navy);}
+  .mt .vol{font-size:20px;font-weight:900;color:var(--navy);margin-top:2px;}
+  .mt .req{font-size:11px;color:var(--mute);margin-top:4px;font-weight:700;}
+  .ptag{display:inline-block;background:var(--navy);color:#fff;font-size:11px;
+    font-weight:900;border-radius:20px;padding:3px 12px;margin-right:6px;}
+  .blk.p{width:46px;height:48px;font-size:10px;border-radius:11px;}
+  .mini-v{width:3px;height:10px;background:var(--link);}
+  .lc{font-size:11px;font-weight:900;color:var(--rd);margin-top:7px;
+    background:#E6EFF8;border-radius:20px;padding:2px 8px;}
+  .income{margin-top:18px;background:#fff;border:1.5px dashed var(--gold);
+    border-radius:14px;padding:12px 15px;}
+  .income .ir{display:flex;justify-content:space-between;font-size:12.5px;
+    padding:4px 0;color:var(--ink);font-weight:600;}
+  .income .ir .iv{font-weight:900;color:var(--navy);}
+  .income .ir.tot{border-top:2px solid var(--gold);margin-top:6px;padding-top:9px;}
+  .income .ir.tot span:first-child{font-weight:900;color:var(--navy);}
+  .income .ir.tot .iv{color:#B98C22;font-size:16px;}
+  .benefit{margin-top:16px;background:linear-gradient(135deg,#FBF3DC,#F4E4BB);
+    border:1.5px solid var(--gold);border-radius:16px;padding:15px 16px;
+    text-align:center;font-size:13px;color:var(--navy);font-weight:700;
+    line-height:1.8;}
+  .benefit .big2{font-size:18px;font-weight:900;color:#8A6512;}
+  .benefit .sub2{font-size:11px;color:var(--mute);font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ══ 결론 먼저 ══ -->
+  <div class="hero">
+    <div class="tag">딱 한 문장으로</div>
+    <h1><span class="g">RD 4명</span>이면 바로<br><span class="g">ID</span><span style="font-size:16px;font-weight:700;color:var(--gold-soft);">(International Director)</span> 입니다 👑</h1>
+    <div class="eq">
+      <div class="rd4">
+        <div class="blk rd">RD</div><div class="blk rd">RD</div>
+        <div class="blk rd">RD</div><div class="blk rd">RD</div>
+      </div>
+      <div class="op">=</div>
+      <div class="blk id m">ID<small>👑</small></div>
+    </div>
+    <div class="sub"><b style="color:#fff;">RD</b>(Regional Director) <b style="color:#fff;">4팀</b>이면<br><b style="color:var(--gold-soft);">International Director</b> 랭크에 오를 수 있어요!</div>
+  </div>
+
+  <!-- ══ 전체 조직도 ══ -->
+  <div class="sh">
+    <div class="k">한 장으로 보는</div>
+    <h2>전체 조직도</h2>
+    <p>위에서 아래로, 선을 따라 내려가며 보세요.</p>
+  </div>
+
+  <div class="tree">
+    <!-- ID → RD 4 -->
+    <div class="root">
+      <div class="blk id l">👑 ID</div>
+      <div class="stem"></div>
+    </div>
+    <div class="kids">
+      <div class="kid"><div class="blk rd s">RD</div></div>
+      <div class="kid"><div class="blk rd s">RD</div></div>
+      <div class="kid"><div class="blk rd s">RD</div></div>
+      <div class="kid"><div class="blk rd s">RD</div></div>
+    </div>
+    <div class="lbl">RD 4팀이면 ID 완성 ✓</div>
+
+    <!-- RD 한 팀 = SMD 3 -->
+    <div class="detail">
+      <div class="dt">▼ RD</div>
+      <div class="root">
+        <div class="blk rd m">RD</div>
+        <div class="stem"></div>
+      </div>
+      <div class="kids">
+        <div class="kid"><div class="blk smd s">SMD</div></div>
+        <div class="kid"><div class="blk smd s">SMD</div></div>
+        <div class="kid"><div class="blk smd s">SMD</div></div>
+      </div>
+      <div class="lbl">SMD 3명</div>
+    </div>
+
+    <!-- SMD 한 명 = MD 3 -->
+    <div class="detail" style="background:#F0F7FB;">
+      <div class="dt">▼ SMD</div>
+      <div class="root">
+        <div class="blk smd m">SMD</div>
+        <div class="stem"></div>
+      </div>
+      <div class="kids">
+        <div class="kid"><div class="blk md s">MD</div></div>
+        <div class="kid"><div class="blk md s">MD</div></div>
+        <div class="kid"><div class="blk md s">MD</div></div>
+      </div>
+      <div class="lbl">MD 3명</div>
+    </div>
+  </div>
+
+  <!-- REWARD -->
+  <div class="reward">
+    <div class="rc g">
+      <div class="ico">💰</div>
+      <div class="l">리더십 보너스 · 매달</div>
+      <div class="v">10%</div>
+      <div class="amt">$10,000</div>
+    </div>
+    <div class="rc">
+      <div class="ico">🔁</div>
+      <div class="l">리커링 보너스 · 매달</div>
+      <div class="v">5%</div>
+      <div class="amt">$5,000+</div>
+    </div>
+  </div>
+
+  <!-- ══════ MD 시작 가이드 ══════ -->
+  <div class="sh">
+    <div class="k">그럼 나는 어디서 시작할까?</div>
+    <h2>첫 목표, MD 달성 플랜</h2>
+    <p>MD가 되려면 매출 <b>$3,000</b>이 필요해요.</p>
+  </div>
+
+  <div class="rule">
+    ⚠️ 한 라인은 <b>40%($1,200)까지만</b> 인정!<br>
+    한 곳에 몰아넣지 말고 <b>여러 라인에 나눠</b> 담으세요.
+  </div>
+
+  <div class="mtypes">
+    <div class="mt hot">
+      <div class="tag2">추천 ✨</div>
+      <div class="nm">프리미엄 가입</div>
+      <div class="vol">$500</div>
+      <div class="req">6명이면 MD 달성!</div>
+    </div>
+    <div class="mt">
+      <div class="nm">클래식 가입</div>
+      <div class="vol">$200</div>
+      <div class="req">15명 필요</div>
+    </div>
+  </div>
+  <div style="text-align:center;font-size:12px;color:var(--mute);font-weight:700;margin:-8px 0 18px;">가입 시 첫 달 활성화비가 포함되어 있습니다</div>
+
+  <!-- 플랜 A -->
+  <div class="tree">
+    <div style="text-align:center;margin-bottom:18px;">
+      <span class="ptag">플랜 A</span>
+      <span style="font-size:15px;font-weight:900;color:var(--navy);">직추 6명으로 끝!</span>
+    </div>
+    <div class="root">
+      <div class="blk id m">나</div>
+      <div class="stem"></div>
+    </div>
+    <div class="kids">
+      <div class="kid"><div class="blk md p">직추</div><div class="lc">$500</div></div>
+      <div class="kid"><div class="blk md p">직추</div><div class="lc">$500</div></div>
+      <div class="kid"><div class="blk md p">직추</div><div class="lc">$500</div></div>
+      <div class="kid"><div class="blk md p">직추</div><div class="lc">$500</div></div>
+      <div class="kid"><div class="blk md p">직추</div><div class="lc">$500</div></div>
+      <div class="kid"><div class="blk md p">직추</div><div class="lc">$500</div></div>
+    </div>
+    <div class="lbl">$500 × 6명 = $3,000 → MD 달성 ✓</div>
+    <div class="income">
+      <div class="ir"><span>활성화 보너스 $50 × 6명</span><span class="iv">$300</span></div>
+      <div class="ir"><span>월간 활성화 보너스</span><span class="iv">$450</span></div>
+      <div class="ir"><span>리더십 보너스</span><span class="iv">$300</span></div>
+      <div class="ir"><span>패스트 스타터 보너스</span><span class="iv">$200</span></div>
+      <div class="ir tot"><span>다음 달 수입</span><span class="iv">$1,250</span></div>
+    </div>
+  </div>
+
+  <!-- 플랜 B -->
+  <div class="tree" style="margin-top:16px;">
+    <div style="text-align:center;margin-bottom:18px;">
+      <span class="ptag" style="background:var(--smd);">플랜 B</span>
+      <span style="font-size:15px;font-weight:900;color:var(--navy);">3명이 1명씩 추천했을 경우</span>
+    </div>
+    <div class="root">
+      <div class="blk id m">나</div>
+      <div class="stem"></div>
+    </div>
+    <div class="kids">
+      <div class="kid">
+        <div class="blk smd p">직추<small>$500</small></div>
+        <div class="mini-v"></div>
+        <div class="blk md p">+1명<small>$500</small></div>
+        <div class="lc">$1,000</div>
+      </div>
+      <div class="kid">
+        <div class="blk smd p">직추<small>$500</small></div>
+        <div class="mini-v"></div>
+        <div class="blk md p">+1명<small>$500</small></div>
+        <div class="lc">$1,000</div>
+      </div>
+      <div class="kid">
+        <div class="blk smd p">직추<small>$500</small></div>
+        <div class="mini-v"></div>
+        <div class="blk md p">+1명<small>$500</small></div>
+        <div class="lc">$1,000</div>
+      </div>
+    </div>
+    <div class="lbl">$1,000 × 3라인 = $3,000 → MD 달성 ✓</div>
+    <div class="income">
+      <div class="ir"><span>직추 활성화 $50 × 3명</span><span class="iv">$150</span></div>
+      <div class="ir"><span>월간 보너스 $50 × 3명</span><span class="iv">$150</span></div>
+      <div class="ir"><span>리더십 보너스</span><span class="iv">$300</span></div>
+      <div class="ir"><span>패스트 스타터 보너스</span><span class="iv">$200</span></div>
+      <div class="ir tot"><span>다음 달 수입</span><span class="iv">$800</span></div>
+      <div class="ir"><span>+ 1레벨 파트너</span><span class="iv">각각 $50씩</span></div>
+    </div>
+    <div style="margin-top:12px;background:#EAF4EC;border:1.5px solid #BFDCC6;border-radius:14px;padding:12px 14px;text-align:center;font-size:12.5px;font-weight:700;color:#2E6B3E;line-height:1.7;">
+      ✅ 직추 구독료 <b>$500 유지 시</b><br>다음 달 내 구독료 <b>$100 면제!</b>
+    </div>
+  </div>
+
+  <!-- 가입 혜택 -->
+  <div class="benefit">
+    💎 프리미엄으로 가입하면<br>
+    <span style="font-size:12.5px;font-weight:700;">활성화비 $250 + 멤버십 $250<span style="color:#8A6512;">(→$500 리워드)</span> + 무료 $50</span><br>
+    <span class="big2">= 총 $800 리워드 적립</span><br>
+    <span class="sub2">다음 달부터 구독료 월 $100</span>
+  </div>
+
+  <div class="benefit" style="background:linear-gradient(135deg,#EAF4EC,#D8EBDD);border-color:#7FB08C;">
+    🏆 MD 혜택<br>
+    <span class="big2" style="color:#2E6B3E;">리더십 보너스 3개월 수령 시 엘리트 트립!</span><br>
+    <span class="sub2">리워드로 크루즈 전액 결제 가능</span>
+  </div>
+
+  <div class="foot">
+    <div class="r"></div>
+    블록 = 인크루즈 리더 직급 · 보너스는 팀 유지 상황에 따라 달라질 수 있어요
+  </div>
+
+</div>
+</body>
+</html>
